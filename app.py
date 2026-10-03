@@ -8,7 +8,9 @@ import streamlit as st
 from posiful.core import demo_data, rank, consumption, UNITS, convert
 from posiful.ui import setup, description, candidate_text, amount, evaluation
 from posiful.history import load_sample, surrounding_plans
+from posiful.history import load_menu_plan as load_base_plan
 from posiful.plan_store import load_menu_plan, replace_menu
+from posiful.demo_plan import replace_in_plan
 from posiful.forecast import predict_sales
 from posiful.search import rank_targets
 from posiful.api import Database, sign_in, sign_up, refresh_session, ai_recipe, embed
@@ -22,6 +24,11 @@ if Path('.env').exists():
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 st.set_page_config(page_title='Posiful | 日替わり提案', page_icon='🍱', layout='wide')
+# Community CloudのSecretsを読み、公開デモの変更をセッションに限定する。
+try:
+    demo_session_only = bool(st.secrets.get('POSIFUL_DEMO_SESSION_ONLY',False))
+except st.errors.StreamlitSecretNotFoundError:
+    demo_session_only = os.getenv('POSIFUL_DEMO_SESSION_ONLY','').lower() in ['true','1']
 setup()
 st.sidebar.caption('メニュー管理')
 page = st.sidebar.radio('画面', ['日替わりを探す', 'レシピを登録', 'レシピ一覧', '日替わり予定', '提供履歴'], label_visibility='collapsed', key='navigation')
@@ -130,6 +137,10 @@ else:
 
 
 def current_plan():
+    if not db and demo_session_only:
+        if 'demo_plan' not in st.session_state:
+            st.session_state.demo_plan = load_base_plan()
+        return st.session_state.demo_plan
     return {'plans':data.get('plans',[]),'metadata':{'source':'Supabase'}} if db else load_menu_plan()
 
 menus = data['menus']
@@ -196,13 +207,18 @@ if page == '日替わりを探す':
             st.info('この日には提供予定がありません。対象日を平日の提供予定日に変更してください。')
         if st.button('このメニューに差し替える',type='primary',disabled=not existing or existing['menu_name']==menu['menu_name'] or menu['menu_type']!='日替わり'):
             try:
-                change = db.replace_menu(target,menu['menu_id'],selected.get('original_revision',existing['revision'])) if db else replace_menu(target,menu,selected.get('original_menu_name',existing['menu_name']))
+                if db:
+                    change = db.replace_menu(target,menu['menu_id'],selected.get('original_revision',existing['revision']))
+                elif demo_session_only:
+                    change = replace_in_plan(current_plan(),target,menu,selected.get('original_menu_name',existing['menu_name']))
+                else:
+                    change = replace_menu(target,menu,selected.get('original_menu_name',existing['menu_name']))
                 st.session_state.plan_notice = f"{target} の予定を「{change['previous_menu_name']}」から「{change['menu_name']}」に差し替えました。"
                 del st.session_state.selected_menu
                 st.rerun()
             except (ValueError,OSError,RuntimeError) as exc:
                 st.error('差し替えできませんでした。予定が別の操作で変更された可能性があります。候補一覧に戻って再検索してください。')
-        st.caption('差し替えはSupabaseの共有予定に保存されます。在庫の実数量は変更しません。' if db else '差し替えはローカルの日替わり予定に保存されます。在庫の実数量は変更しません。')
+        st.caption('差し替えはSupabaseの共有予定に保存されます。在庫の実数量は変更しません。' if db else ('公開デモの差し替えはこのセッション内だけに保存されます。' if demo_session_only else '差し替えはローカルの日替わり予定に保存されます。在庫の実数量は変更しません。'))
         if st.button('候補一覧に戻る'):
             del st.session_state.selected_menu
             st.rerun()

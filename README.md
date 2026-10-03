@@ -38,6 +38,10 @@ python -m venv .venv
 デモベクトルは手作りの仮データで、AIによる意味的な品質は評価していません。
 デモで追加したレシピはセッション内のみ保持します。
 
+### Streamlit Community Cloudでデモを公開
+
+Repository: `panapanawriter-dev/posiful-app`、Branch: `main`、Main file path: `app.py`。Advanced settingsのPythonは3.12を選択し、Secretsに `POSIFUL_DEMO_SESSION_ONLY = true` を設定します。APIキーは不要です。各利用者の予定変更はセッション内に保持し、他の利用者の予定やローカルファイルを変更しません。新しいブラウザセッションでは初期予定に戻ります。
+
 ### Supabase
 
 専用プロジェクト `posiful-app` を組織 `techyuta`、東京リージョンに作成済み。
