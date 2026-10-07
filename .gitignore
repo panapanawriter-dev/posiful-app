@@ -5,3 +5,5 @@ __pycache__/
 data/local.json
 data/menu_plan_changes.json
 *.log
+data/local_demo_embeddings.json
+data/local_model_comparison.json

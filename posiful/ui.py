@@ -73,7 +73,7 @@ def amount(value, unit):
     return f'{value:,.1f}'.rstrip('0').rstrip('.')+' '+unit
 
 
-def evaluation(menu):
+def evaluation(menu, show_targets=True):
     """判断材料を独立した指標として表示する。"""
     fit = menu['quantity_fit']
     difference = None if menu['novelty'] is None else menu['novelty']/2
@@ -81,7 +81,7 @@ def evaluation(menu):
     a,b,c = st.columns(3)
     a.write('希望消費量への近さ')
     a.write('未評価' if fit is None else f'{fit*100:.1f} / 100')
-    b.write('前後2日のメニューとの相違度')
+    b.write('前後1日のメニューとの相違度')
     b.write('未評価' if difference is None else f'{difference:.1f} / 100')
     c.write('総合評価' if fit is not None and difference is not None else '参考評価（片方のみ）')
     if total is None:
@@ -96,6 +96,8 @@ def evaluation(menu):
     with st.expander('文字評価の基準'):
         st.caption('A+: 90以上 ／ A: 80以上 ／ A-: 70以上 ／ B+: 60以上 ／ B: 50以上 ／ B-: 40以上 ／ C+: 30以上 ／ C: 20以上 ／ C-: 20未満')
         st.caption('検索の評価値に基づく目安です。片方の指標のみの場合は参考評価になります。')
+    if not show_targets:
+        return
     st.table([{'材料':r['材料'],
                '希望消費量':amount(r['希望消費量'],r['単位']),
                '予測消費量':'未評価' if r['予測消費量'] is None else amount(r['予測消費量'],r['単位']),

@@ -112,5 +112,5 @@ def load_menu_plan():
 
 def surrounding_plans(plans,target_date):
     target = date.fromisoformat(target_date)
-    return sorted([row for row in plans if target-timedelta(days=2) <= date.fromisoformat(row['planned_date']) <= target+timedelta(days=2)
+    return sorted([row for row in plans if target-timedelta(days=1) <= date.fromisoformat(row['planned_date']) <= target+timedelta(days=1)
                    and row['planned_date'] != target_date],key=lambda row:row['planned_date'])
