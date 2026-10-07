@@ -50,13 +50,13 @@ def setup():
 
 def description(menu, recent):
     if not recent:
-        return '前後2日に比較可能な予定がありません。'
+        return '前後1営業日に比較可能な予定がありません。'
     differences = []
     for key,label in [('genre','ジャンル'),('seasoning','味付け'),('cooking_method','調理法')]:
         previous = list(dict.fromkeys(m[key] for m in recent))
         if menu[key] not in previous:
             differences.append(f"{label}: {'・'.join(previous)} → {menu[key]}")
-    return ' ／ '.join(differences) if differences else '前後2日の予定に似た特徴の献立があります。'
+    return ' ／ '.join(differences) if differences else '前後1営業日の予定に似た特徴の献立があります。'
 
 
 def candidate_text(menu, explanation):
@@ -81,7 +81,7 @@ def evaluation(menu, show_targets=True):
     a,b,c = st.columns(3)
     a.write('希望消費量への近さ')
     a.write('未評価' if fit is None else f'{fit*100:.1f} / 100')
-    b.write('前後1日のメニューとの相違度')
+    b.write('前後1営業日のメニューとの相違度')
     b.write('未評価' if difference is None else f'{difference:.1f} / 100')
     c.write('総合評価' if fit is not None and difference is not None else '参考評価（片方のみ）')
     if total is None:

@@ -110,7 +110,14 @@ def load_menu_plan():
     return json.loads(PLAN_PATH.read_text(encoding='utf-8'))
 
 
-def surrounding_plans(plans,target_date):
+def surrounding_plans(plans, target_date):
+    """前後1営業日（月〜金）の予定。祝日は営業日として扱う。"""
     target = date.fromisoformat(target_date)
-    return sorted([row for row in plans if target-timedelta(days=1) <= date.fromisoformat(row['planned_date']) <= target+timedelta(days=1)
-                   and row['planned_date'] != target_date],key=lambda row:row['planned_date'])
+    nearby_dates = set()
+    for direction in (-1, 1):
+        current = target + timedelta(days=direction)
+        while current.weekday() >= 5:
+            current += timedelta(days=direction)
+        nearby_dates.add(current.isoformat())
+    return sorted([row for row in plans if row['planned_date'] in nearby_dates],
+                  key=lambda row: row['planned_date'])

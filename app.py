@@ -211,7 +211,7 @@ if page == '日替わりを探す':
                 with st.expander('評価の根拠'):
                     if evaluated:
                         evaluation(evaluated, show_targets=False)
-                    st.subheader('前後1日の予定との違い')
+                    st.subheader('前後1営業日の予定との違い')
                     st.write(description(menu, recent))
                 with st.expander('販売実績からの予測根拠'):
                     st.caption(f"対象日より前の販売実績 {forecast['training_count']}件を使用。最終実績日: {forecast['training_end']}。天気: {weather}")
@@ -231,14 +231,14 @@ if page == '日替わりを探す':
             score_column.metric('前後のメニューとの相違度',
                                 '未評価' if novelty is None else f'{novelty/2:.1f} / 100')
             score_column.caption('高いほど違いが大きい')
-            plan_column.markdown('**前後1日のメニュー**')
+            plan_column.markdown('**前後1営業日のメニュー**')
             nearby_plans = surrounding_plans(current_plan()['plans'], target)
             if nearby_plans:
                 for planned in nearby_plans:
                     plan_column.write(f"{planned['planned_date']}　{planned['menu_name']}")
                 plan_column.caption('比較できる予定のうち、最も似たメニューとの差を表示します。')
             else:
-                plan_column.caption('前後1日に提供予定がありません。')
+                plan_column.caption('前後1営業日に提供予定がありません。')
             if novelty is None and nearby_plans:
                 plan_column.caption('比較できる特徴データがないため、相違度は未評価です。')
         existing = next((r for r in current_plan()['plans'] if r['planned_date']==target),None)
@@ -265,7 +265,7 @@ if page == '日替わりを探す':
             st.rerun()
     else:
         st.title('在庫を活かして、日替わりに変化を。')
-        st.caption('消費したい食材から、前後1日の予定とは違う候補を見つけます。')
+        st.caption('消費したい食材から、前後1営業日の予定とは違う候補を見つけます。')
         ingredients = sorted({i['name'] for m in menus for i in m['ingredients']})
         if not ingredients:
             st.info('レシピを登録すると材料から検索できます。')
@@ -288,7 +288,7 @@ if page == '日替わりを探す':
                 weather = weather_input(target, '対象日の天気', 'search_weather', b)
                 ingredient = selected_ingredients[0] if selected_ingredients else None
                 st.caption('選択した材料をすべて使う候補を表示。メニューの違いと希望消費量への近さを同じ重みで評価します。希望量を超える場合も差として評価します。')
-                st.caption('比較範囲: 対象日の前後1日（暦日）。対象日自身は比較から除外します。')
+                st.caption('比較範囲: 対象日の前後1営業日（月〜金、土日を除外・祝日は営業）。対象日自身は比較から除外します。')
                 stocks = [s for s in data['inventory'] if s['name']==ingredient and s['expiration_date'] >= target]
                 if stocks:
                     unit = stocks[0]['unit']
@@ -302,7 +302,7 @@ if page == '日替わりを探す':
                 st.button('候補を検索', type='primary')
             names = {m['menu_id']:m['menu_name'] for m in menus}
             with st.container(key='recent_panel'):
-                st.subheader('2  前後1日の日替わり予定')
+                st.subheader('2  前後1営業日の日替わり予定')
                 plan = current_plan()
                 nearby = surrounding_plans(plan['plans'],target)
                 # サンプルのローカルIDをSupabaseのIDへ流用しない。名前で対応付ける。
@@ -314,7 +314,7 @@ if page == '日替わりを探す':
                     if missing:
                         st.warning('比較用のレシピ・ベクトルが未登録: '+'、'.join(dict.fromkeys(missing)))
                 else:
-                    st.info('前後1日に提供予定がありません。暫定サンプルは2026年10月の平日です。')
+                    st.info('前後1営業日に提供予定がありません。暫定サンプルは2026年10月の平日です。')
                 st.caption('全企業共通の暫定予定を参照します。土日は提供予定なし。')
                 recent = [m for m in menus if m['menu_id'] in recent_ids]
                 st.caption(' ／ '.join(m['menu_name'] for m in recent) if recent else '比較可能な予定がないため、材料条件だけで表示します。')
@@ -331,7 +331,7 @@ if page == '日替わりを探す':
                         st.caption(f"対象日より前の実績 {forecast['training_count']}件を使用。最終実績日: {forecast['training_end']}")
                         st.write(forecast['reason'])
                         st.dataframe(forecast['companies'],hide_index=True,width='stretch')
-                st.caption('各指標は高いほど優先。相違度は前後1日のうち最も似たメニューとの距離です。総合評価は消費量への近さと相違度の平均です。差分は＋が希望量超過、−が不足。評価を比較し、詳細画面で人が差し替えを決定します。')
+                st.caption('各指標は高いほど優先。相違度は前後1営業日のうち最も似たメニューとの距離です。総合評価は消費量への近さと相違度の平均です。差分は＋が希望量超過、−が不足。評価を比較し、詳細画面で人が差し替えを決定します。')
                 current_plan_row = next((r for r in plan['plans'] if r['planned_date']==target), None)
                 current_menu = next((m for m in menus if current_plan_row and m['menu_name']==current_plan_row['menu_name']), None)
                 if current_menu:
@@ -508,7 +508,7 @@ if page == '日替わり予定':
     st.caption('2026年10月 · 全企業共通の暫定サンプル')
     st.caption('10/5〜10/16は10種類を1日1種類ずつ配置。予定の作成には関連度を使っていません。')
     st.dataframe([{'提供予定日':r['planned_date'],'曜日':r['weekday'],'メニュー':r['menu_name'],'状態':r['status']} for r in plan['plans']],hide_index=True,width='stretch')
-    st.caption('差し替え候補の検索では、対象日の前後1暦日を比較します。対象日の予定は除外します。')
+    st.caption('差し替え候補の検索では、対象日の前後1営業日を比較します。対象日の予定は除外します。')
     st.download_button('暫定予定JSONをダウンロード',json.dumps(plan,ensure_ascii=False,indent=2),file_name='sample_menu_plan_2026_10.json',mime='application/json')
 
 if page == '提供履歴':
