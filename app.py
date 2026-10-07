@@ -18,6 +18,7 @@ from posiful.recipe import validate_ingredients, comparison_text, COMPARISON_FIE
 from posiful.demo_embeddings import apply_demo_embeddings
 from posiful.ingredient_names import normalize_rows
 from posiful.weather import fetch_fukuoka, forecast_for
+from posiful.settings import configure
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
@@ -76,11 +77,11 @@ if Path('.env').exists():
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 st.set_page_config(page_title='Posiful | 日替わり提案', page_icon='🍱', layout='wide')
-# Community CloudのSecretsを読み、公開デモの変更をセッションに限定する。
+# Cloud SecretsをAPI層へ渡す。設定なしの場合は通常の共有版を使用する。
 try:
-    demo_session_only = bool(st.secrets.get('POSIFUL_DEMO_SESSION_ONLY',False))
+    demo_session_only = configure(st.secrets)
 except st.errors.StreamlitSecretNotFoundError:
-    demo_session_only = os.getenv('POSIFUL_DEMO_SESSION_ONLY','').lower() in ['true','1']
+    demo_session_only = configure({})
 setup()
 main_pages = ['日替わりを探す', 'レシピを登録']
 admin_pages = ['レシピ一覧', '日替わり予定', '提供履歴']
@@ -140,7 +141,7 @@ if mode == 'デモ':
     apply_demo_embeddings(data['menus'])
 else:
     if not os.getenv('SUPABASE_URL') or not os.getenv('SUPABASE_PUBLISHABLE_KEY'):
-        st.warning('.env にSupabaseのURLと公開キーを設定してください。')
+        st.warning('SupabaseのURLと公開キーを設定してください。CloudではSettings → Secrets、ローカルでは.envに設定します。')
         st.stop()
     db = Database(None)
     try:

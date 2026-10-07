@@ -44,6 +44,8 @@ Repository: `panapanawriter-dev/posiful-app`、Branch: `main`、Main file path: 
 
 ### Supabase
 
+公開版をSupabase共有版へ切り替える手順は [Cloud接続設定](docs/cloud_supabase_setup.md) を参照してください。CloudではSettings → Secretsに接続情報を設定し、`POSIFUL_DEMO_SESSION_ONLY = false` にします。設定の読み込みは `posiful/settings.py` が行います。
+
 専用プロジェクト `posiful-app` を組織 `techyuta`、東京リージョンに作成済み。
 プロジェクトID: `dklpsxmjbhmgertlbnhc`。
 
