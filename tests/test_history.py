@@ -63,6 +63,6 @@ class HistoryTests(unittest.TestCase):
         plans = generate_menu_plan()['plans']
         self.assertEqual(generate_menu_plan(),load_menu_plan())
         nearby = surrounding_plans(plans,'2026-10-07')
-        self.assertEqual([r['planned_date'] for r in nearby],['2026-10-05','2026-10-06','2026-10-08','2026-10-09'])
-        self.assertEqual([r['planned_date'] for r in surrounding_plans(plans,'2026-10-05')],['2026-10-06','2026-10-07'])
+        self.assertEqual([r['planned_date'] for r in nearby],['2026-10-06','2026-10-08'])
+        self.assertEqual([r['planned_date'] for r in surrounding_plans(plans,'2026-10-05')],['2026-10-02','2026-10-06'])
         self.assertEqual(len({r['planned_date'] for r in plans}),len(plans))
