@@ -1,6 +1,12 @@
+import os
 import unittest
+from unittest.mock import patch
 from posiful.core import demo_data, rank, consumption, cosine
 
+from pathlib import Path
+
+# Streamlitのバージョンにより、相対パスの基準が変わるため、絶対パスで指定する。
+APP_PATH = str(Path(__file__).resolve().parents[1] / 'app.py')
 
 class CoreTests(unittest.TestCase):
     def test_material_filter_and_novelty(self):
@@ -36,9 +42,12 @@ class CoreTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 cosine(a,b)
 
+    @patch.dict(os.environ, {'POSIFUL_DEMO_SESSION_ONLY': 'true'})
     def test_streamlit_demo(self):
         from streamlit.testing.v1 import AppTest
-        app = AppTest.from_file('app.py').run(timeout=30)
+        from datetime import date
+        app = AppTest.from_file(APP_PATH).run(timeout=30)
+        app.date_input[0].set_value(date(2026,10,13)).run()
         self.assertEqual(len(app.exception), 0)
         self.assertGreaterEqual(len([b for b in app.button if b.label == '消化量を確認']), 2)
         next(b for b in app.button if b.label == '消化量を確認').click().run()
@@ -47,15 +56,15 @@ class CoreTests(unittest.TestCase):
         next(b for b in app.button if b.label == '候補一覧に戻る').click().run()
         self.assertEqual(len(app.multiselect), 1)
         self.assertEqual(len(app.exception), 0)
-        self.assertEqual(len(app.metric), 1)
+        self.assertTrue(any('予測販売個数' in m.label for m in app.metric))
         app.radio[0].set_value('レシピを登録').run()
         self.assertEqual(len(app.exception), 0)
         self.assertEqual(app.number_input[0].value, 10)
-        app.radio[0].set_value('レシピ一覧').run()
+        next(b for b in app.button if b.key=='admin_レシピ一覧').click().run()
         self.assertEqual(len(app.exception), 0)
-        app.radio[0].set_value('日替わり予定').run()
+        next(b for b in app.button if b.key=='admin_日替わり予定').click().run()
         self.assertEqual(len(app.exception), 0)
-        app.radio[0].set_value('提供履歴').run(timeout=30)
+        next(b for b in app.button if b.key=='admin_提供履歴').click().run(timeout=30)
         self.assertEqual(len(app.exception), 0)
         self.assertEqual(app.metric[0].value, '22 日')
         self.assertEqual(app.metric[1].value, '10 社')

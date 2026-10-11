@@ -25,18 +25,18 @@ def request(url, key, payload=None, token=None):
             except (ValueError, AttributeError):
                 code = None
             if code == 'insufficient_quota':
-                raise RuntimeError('OpenAI APIの利用残高または利用上限が不足しています。APIの請求設定・残高・利用上限を確認してください。') from None
+                raise RuntimeError('読み取り機能を使える上限に達しました。管理者に連絡してください。') from None
             raise RuntimeError('OpenAI APIのリクエスト上限に達しました。少し時間をおいて再試行してください。') from None
         # レスポンスやキーは画面へ出さない。
-        raise RuntimeError(f"APIリクエストに失敗しました (HTTP {exc.code})。設定・権限を確認してください。") from None
+        raise RuntimeError('通信に失敗しました。少し待って、もう一度お試しください。') from None
     except URLError:
-        raise RuntimeError("APIに接続できません。ネットワークを確認してください。") from None
+        raise RuntimeError('通信に失敗しました。少し待って、もう一度お試しください。') from None
 
 
 def ai_recipe(name, recipe, servings=1):
     key = os.getenv("OPENAI_API_KEY", "")
     if not key:
-        raise ValueError("OPENAI_API_KEY が未設定です")
+        raise ValueError('読み取り機能の設定がまだ終わっていません。管理者に連絡してください。')
     fields = {k:{"type":"string"} for k in ["genre", "seasoning", "cooking_method", "richness", "feature_text", "finishing", "flavor", "main_ingredient", "coating"]}
     fields["ingredients"] = {"type":"array", "items":{"type":"object", "properties":{
         "name":{"type":"string"}, "quantity":{"type":["number","null"]}, "unit":{"type":["string","null"], "enum":["g","kg","ml","L","個",None]}, "note":{"type":"string"}},
@@ -50,11 +50,11 @@ def ai_recipe(name, recipe, servings=1):
             "schema":{"type":"object", "properties":fields, "required":list(fields), "additionalProperties":False}}}})
     message = response["choices"][0]["message"]
     if not message.get("content") or message.get("refusal") or response["choices"][0]["finish_reason"] != "stop":
-        raise ValueError("構造化結果を取得できませんでした")
+        raise ValueError('読み取りに失敗しました。少し待って、もう一度お試しください。')
     try:
         return structure_recipe(json.loads(message["content"]), servings)
     except (KeyError, TypeError, json.JSONDecodeError):
-        raise ValueError('構造化結果の形式が不正です。もう一度整理してください。') from None
+        raise ValueError('読み取りに失敗しました。少し待って、もう一度お試しください。') from None
 
 
 def embed(text):

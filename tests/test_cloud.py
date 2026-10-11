@@ -1,9 +1,14 @@
+import os
 import unittest
 from copy import deepcopy
 from unittest.mock import patch
 from posiful.cloud import sample_payload
 from posiful.api import Database
 
+from pathlib import Path
+
+# Streamlitのバージョンにより、相対パスの基準が変わるため、絶対パスで指定する。
+APP_PATH = str(Path(__file__).resolve().parents[1] / 'app.py')
 
 class CloudTests(unittest.TestCase):
     def test_payload_vectors_and_counts(self):
@@ -40,13 +45,9 @@ class CloudTests(unittest.TestCase):
                 row.update(menu_id=menu_id,menu_name=menu['menu_name'],revision=revision+1,status='差し替え済み')
                 return {'previous_menu_name':self_previous,'menu_name':row['menu_name']}
 
-        with patch('posiful.api.Database',FakeDatabase),patch('posiful.api.sign_in',return_value={
-            'access_token':'test','refresh_token':'test-refresh','expires_in':3600,'user':{'id':'test-owner'}}):
-            app = AppTest.from_file('app.py').run(timeout=30)
-            next(r for r in app.radio if r.label=='データ接続').set_value('Supabase').run()
-            next(t for t in app.text_input if t.label=='メールアドレス').set_value('owner@example.test')
-            next(t for t in app.text_input if t.label=='パスワード').set_value('test-password')
-            next(b for b in app.button if b.label=='続ける').click().run()
+        env = {'SUPABASE_URL':'https://example.test','SUPABASE_PUBLISHABLE_KEY':'test','POSIFUL_DEMO_SESSION_ONLY':'false'}
+        with patch.dict(os.environ,env),patch('posiful.api.Database',FakeDatabase):
+            app = AppTest.from_file(APP_PATH).run(timeout=30)
             self.assertEqual(len(app.exception),0)
             app.date_input[0].set_value(date(2026,10,8)).run()
             self.assertEqual(app.metric[0].value,'198 食')
