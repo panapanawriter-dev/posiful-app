@@ -20,20 +20,36 @@ def cosine(a, b):
     return max(-1, min(1, sum(x*y for x, y in zip(a, b)) / norm))
 
 
+def difference_scales(menus):
+    """登録済み全レシピの最大距離を、モデルごとに100点の基準にする。"""
+    scales = {}
+    for index, left in enumerate(menus):
+        model = left['embedding_model']
+        scales.setdefault(model, 0.0)
+        for right in menus[index + 1:]:
+            if right['embedding_model'] == model:
+                distance = 1 - cosine(left['embedding'], right['embedding'])
+                scales[model] = max(scales[model], distance)
+    return scales
+
+
+def difference_score(menu, recent, scales):
+    if not recent or any(m['embedding_model'] != menu['embedding_model'] for m in recent):
+        return None
+    distance = 1 - max(cosine(menu['embedding'], m['embedding']) for m in recent)
+    maximum = scales.get(menu['embedding_model'], 0)
+    return min(100.0, max(0.0, distance / maximum * 100)) if maximum > 1e-12 else 0.0
+
+
 def rank(menus, ingredient, recent_ids):
     recent = [m for m in menus if m["menu_id"] in recent_ids]
+    scales = difference_scales(menus)
     results = []
     for menu in menus:
         if menu["menu_id"] in recent_ids or not any(i["name"] == ingredient for i in menu["ingredients"]):
             continue
         row = dict(menu)
-        comparable = all(m["embedding_model"] == menu["embedding_model"] for m in recent)
-        if recent and comparable:
-            # 最も似た直近日替わりとの距離を使い、似すぎる候補を避ける。
-            similarity = max(cosine(menu["embedding"], m["embedding"]) for m in recent)
-            row["novelty"] = (1 - similarity) * 100
-        else:
-            row["novelty"] = None
+        row["novelty"] = difference_score(menu, recent, scales)
         results.append(row)
     return sorted(results, key=lambda m: (m["novelty"] is None, -(m["novelty"] or 0), m["menu_name"]))
 

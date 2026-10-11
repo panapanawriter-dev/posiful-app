@@ -66,3 +66,19 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual([r['planned_date'] for r in nearby],['2026-10-06','2026-10-08'])
         self.assertEqual([r['planned_date'] for r in surrounding_plans(plans,'2026-10-05')],['2026-10-02','2026-10-06'])
         self.assertEqual(len({r['planned_date'] for r in plans}),len(plans))
+
+
+    def test_business_day_weekend_and_month_boundary(self):
+        plans = [{'planned_date': day, 'menu_id': i} for i, day in enumerate(
+            ['2026-09-30', '2026-10-01', '2026-10-02', '2026-10-05', '2026-10-06'])]
+        for target, expected in [
+            ('2026-10-02', ['2026-10-01', '2026-10-05']),
+            ('2026-10-05', ['2026-10-02', '2026-10-06']),
+            ('2026-10-03', ['2026-10-02', '2026-10-05']),
+            ('2026-10-01', ['2026-09-30', '2026-10-02'])]:
+            with self.subTest(target=target):
+                self.assertEqual([row['planned_date'] for row in surrounding_plans(plans, target)], expected)
+        self.assertEqual(surrounding_plans([], '2026-10-05'), [])
+        self.assertEqual([row['planned_date'] for row in surrounding_plans(
+            [{'planned_date': '2026-10-01'}, {'planned_date': '2026-10-06'}], '2026-10-05')],
+            ['2026-10-06'])

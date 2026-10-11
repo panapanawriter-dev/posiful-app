@@ -11,6 +11,18 @@ from pathlib import Path
 APP_PATH = str(Path(__file__).resolve().parents[1] / 'app.py')
 
 class CloudTests(unittest.TestCase):
+    def test_shared_rpc_uses_no_user_token(self):
+        with patch.dict('os.environ', {'SUPABASE_URL':'https://example.supabase.co',
+                                      'SUPABASE_PUBLISHABLE_KEY':'public-test'}), patch('posiful.api.request') as send:
+            db = Database()
+            db.load()
+            self.assertTrue(send.call_args.args[0].endswith('/rpc/posiful_shared_load'))
+            self.assertIsNone(send.call_args.args[3])
+            db.save({'menu_name':'test'})
+            self.assertTrue(send.call_args.args[0].endswith('/rpc/posiful_shared_save_recipe'))
+            db.replace_menu('2026-10-08',23,2)
+            self.assertTrue(send.call_args.args[0].endswith('/rpc/posiful_shared_replace_menu'))
+
     def test_payload_vectors_and_counts(self):
         sample = sample_payload()
         self.assertEqual(len(sample['menus']),10)

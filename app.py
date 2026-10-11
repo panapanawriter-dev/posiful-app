@@ -296,7 +296,7 @@ if page == '日替わりを探す':
                 current_plan_row = next((r for r in plan['plans'] if r['planned_date']==target), None)
                 current_menu = next((m for m in menus if current_plan_row and m['menu_name']==current_plan_row['menu_name']), None)
                 if current_menu:
-                    baseline = evaluate_current(current_menu, targets, recent, None if forecast is None else forecast['quantity'])
+                    baseline = evaluate_current(current_menu, targets, recent, None if forecast is None else forecast['quantity'], menus=menus)
                     with st.container(key='candidate_current'):
                         st.subheader('現在の予定メニュー')
                         _, body, _ = st.columns([1,6,1.5])

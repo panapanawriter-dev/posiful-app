@@ -81,6 +81,7 @@ def status_label(status):
 
 def grade_guide():
     with st.expander('おススメ度の見方'):
+        st.caption('おススメ度は、希望消費量への近さと相違度の平均です。相違度は登録済みレシピ全体で一番大きい違いを100点として、前後1営業日のうち最も似たメニューとの違いを換算します。レシピ追加・変更で基準も変わります。')
         st.caption('A+: 90以上 ／ A: 80以上 ／ A-: 70以上 ／ B+: 60以上 ／ B: 50以上 ／ B-: 40以上 ／ C+: 30以上 ／ C: 20以上 ／ C-: 20未満')
 
 
@@ -94,7 +95,7 @@ def amount(value, unit):
 
 def _score_badge(menu):
     fit = menu['quantity_fit']
-    difference = None if menu['novelty'] is None else menu['novelty']/2
+    difference = None if menu['novelty'] is None else menu['novelty']
     total = menu['priority_score']
     label = 'おススメ度' if fit is not None and difference is not None else 'おススメ度（参考）'
     if total is None:
