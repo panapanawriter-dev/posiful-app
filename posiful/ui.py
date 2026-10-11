@@ -10,7 +10,7 @@ def setup():
     [data-testid="stHeader"] {background:transparent;height:0;}
     [data-testid="stMainBlockContainer"] {max-width:1128px;padding:113px 32px 40px;}
     .bento-header {position:fixed;top:0;left:0;right:0;height:81px;z-index:999;background:white;display:flex;align-items:center;justify-content:space-between;padding:24px;box-sizing:border-box;}
-    .bento-brand {font-size:22px;font-weight:700;color:var(--bento-green);}
+    .bento-brand {font-size:26px;font-weight:700;color:var(--bento-green);}
     .bento-status {font-size:13px;color:var(--bento-muted);}
     [data-testid="stSidebar"] {background:white;min-width:216px!important;max-width:216px!important;top:81px;}
     [data-testid="stSidebarUserContent"] {padding:24px 0;}
@@ -48,8 +48,8 @@ def setup():
     .candidate-tags {color:var(--bento-green);font-size:12px;}
     .candidate-description {color:var(--bento-muted);font-size:13px;line-height:1.6;}
     .bento-soft {background:var(--bento-soft);padding:24px;border-radius:16px;}
-    @media(max-width:768px) {.bento-brand{font-size:18px}.bento-status{font-size:11px}[data-testid="stMainBlockContainer"]{padding:105px 20px 32px;}.bento-header{padding:20px;}}
-    </style><div class="bento-header"><span class="bento-brand">BENTO / 献立サポート</span></div>''', unsafe_allow_html=True)
+    @media(max-width:768px) {.bento-brand{font-size:21px}.bento-status{font-size:11px}[data-testid="stMainBlockContainer"]{padding:105px 20px 32px;}.bento-header{padding:20px;}}
+    </style><div class="bento-header"><span class="bento-brand">ポジ弁/ 献立サポート</span></div>''', unsafe_allow_html=True)
 
 
 def description(menu, recent):
