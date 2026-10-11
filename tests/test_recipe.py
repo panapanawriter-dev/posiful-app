@@ -3,6 +3,10 @@ import unittest
 from unittest.mock import patch
 from posiful.recipe import structure_recipe, validate_ingredients, comparison_text
 from posiful.api import ai_recipe
+from pathlib import Path
+
+# Streamlitのバージョンにより、相対パスの基準が変わるため、絶対パスで指定する。
+APP_PATH = str(Path(__file__).resolve().parents[1] / 'app.py')
 
 
 class RecipeTests(unittest.TestCase):
@@ -21,7 +25,7 @@ class RecipeTests(unittest.TestCase):
         raw = {'ingredients': [{'name': '鶏肉', 'quantity': 1200, 'unit': 'g', 'note': ''}],
                'genre': '和食', 'seasoning': '醤油', 'cooking_method': '焼く', 'richness': 'こってり', 'feature_text': '和食'}
         with patch('posiful.api.ai_recipe', return_value=structure_recipe(raw, 10)) as extract:
-            app = AppTest.from_file('app.py').run(timeout=30)
+            app = AppTest.from_file(APP_PATH).run(timeout=30)
             app.radio[0].set_value('レシピを登録').run()
             next(x for x in app.text_input if x.label == 'メニュー名').set_value('テスト料理')
             app.text_area[0].set_value('鶏肉1200gを焼く')

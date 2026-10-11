@@ -48,7 +48,7 @@ def weather_input(target, label, key, container=st, fallback='晴れ'):
         if forecast['reference_only']:
             container.caption('8日以上先の参考予報です。販売予測の天気はご自身で選んでください。')
     elif payload:
-        container.caption('指定日は予報の取得範囲外です。過去の天気ではなく、ご自身で選んだ天気の想定を使います。')
+        container.caption('指定日は予報の取得範囲外です。ご自身で想定の天気を選択してください。')
     selected = weather_slot.selectbox(label, ['晴れ','曇り','雨'], index=['晴れ','曇り','雨'].index(fallback), key=key+'_'+target,
                                    format_func=lambda value: {'晴れ':'☀️ 晴れ', '曇り':'☁️ 曇り', '雨':'🌧️ 雨'}[value],
                                    help='販売予測に使う天気です。取得した予報から変更できます。')
