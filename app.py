@@ -295,7 +295,13 @@ if page == '日替わりを探す':
                         grade_guide()
                 current_plan_row = next((r for r in plan['plans'] if r['planned_date']==target), None)
                 current_menu = next((m for m in menus if current_plan_row and m['menu_name']==current_plan_row['menu_name']), None)
-                if current_menu:
+                current_consumes_targets = (
+                    current_menu is not None and bool(targets)
+                    and forecast is not None and forecast['quantity'] > 0
+                    and all(any(i['name'] == t['name'] and i['quantity'] > 0
+                                for i in current_menu['ingredients']) for t in targets)
+                )
+                if current_consumes_targets:
                     baseline = evaluate_current(current_menu, targets, recent, None if forecast is None else forecast['quantity'], menus=menus)
                     with st.container(key='candidate_current'):
                         st.subheader('現在の予定メニュー')
@@ -308,9 +314,9 @@ if page == '日替わりを探す':
                         comparable = [m for m in candidates if m['priority_score'] is not None and m['novelty'] is not None and m['quantity_fit'] is not None]
                         if comparable and all(m['priority_score'] <= baseline['priority_score'] for m in comparable):
                             st.info('評価できる差し替え候補は、現在の予定を上回っていません。現在の予定のままにする選択もできます。')
-                elif current_plan_row:
+                elif current_plan_row and current_menu is None:
                     st.info('現在の予定メニューはレシピ未登録のため評価できません。')
-                else:
+                elif current_plan_row is None:
                     st.info('対象日に現在の提供予定がありません。')
                 candidates.sort(key=lambda m:(m['priority_score'] is None,-(m['priority_score'] or 0),m['menu_name']))
                 if not candidates:
