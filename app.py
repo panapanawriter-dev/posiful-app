@@ -63,7 +63,7 @@ if Path('.env').exists():
             key, value = line.split('=', 1)
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
-st.set_page_config(page_title='Posiful | 日替わり提案', page_icon='🍱', layout='wide')
+st.set_page_config(page_title='POSIBEN | 日替わり提案', page_icon='🍱', layout='wide')
 # Cloud SecretsをAPI層へ渡す。設定なしの場合は通常の共有版を使用する。
 try:
     demo_session_only = configure(st.secrets)

@@ -49,7 +49,7 @@ def setup():
     .candidate-description {color:var(--bento-muted);font-size:13px;line-height:1.6;}
     .bento-soft {background:var(--bento-soft);padding:24px;border-radius:16px;}
     @media(max-width:768px) {.bento-brand{font-size:21px}.bento-status{font-size:11px}[data-testid="stMainBlockContainer"]{padding:105px 20px 32px;}.bento-header{padding:20px;}}
-    </style><div class="bento-header"><span class="bento-brand">ポジ弁/ 献立サポート</span></div>''', unsafe_allow_html=True)
+    </style><div class="bento-header"><span class="bento-brand">POSIBEN</span></div>''', unsafe_allow_html=True)
 
 
 def description(menu, recent):
